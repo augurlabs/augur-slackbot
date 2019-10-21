@@ -13,6 +13,6 @@
 
 ## How to Develop
 
-ngrok http 4390
-dynamo
-node ngrok-index.js
+ngrok http 4390  
+dynamo  
+node ngrok-index.js  
