@@ -1,2 +1,0 @@
-# augur-slackbot
-augur-slackbot
