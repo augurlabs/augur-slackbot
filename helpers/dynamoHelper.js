@@ -1,9 +1,6 @@
 const methods = {};
 
 var AWS = require("aws-sdk");
-const DynamoDbLocal = require('dynamodb-local');
-const dynamoLocalPort = 8000;
-
 
 AWS.config.update({
   region: "us-east-2",
