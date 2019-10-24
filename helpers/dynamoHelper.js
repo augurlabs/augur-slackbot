@@ -23,7 +23,6 @@ methods.setSelectedChannel = async (client, channelId) => {
 
     let response = await docClient.put(params).promise();
     console.log(JSON.stringify(response));
-
 }
 
 methods.getTeamInfo = async (client) => {

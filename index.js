@@ -131,7 +131,14 @@ async function handleModalSubmission(slackEvent) {
     case "RG_SUBMISSION":
       let rgSubmission = slackEvent.view.state.values.rgInput.RG_INPUT.value;
       console.log(rgSubmission);
-      return "200 OK"
+      console.log("butts");
+      return {
+        "statusCode": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": ""
+      };
     default:
       return "200 OK";
   }
