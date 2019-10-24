@@ -11,6 +11,7 @@ const token = process.env.SLACK_TOKEN;
 let client = new WebClient(token);
 const insightHelper = require('./helpers/insightHelper');
 const setupHelper = require('./helpers/setupHelper');
+const dynamoHelper = require('./helpers/dynamoHelper');
 
 
 exports.handler = async (event) => {
@@ -125,21 +126,53 @@ async function handleModalSubmission(slackEvent) {
   let callbackId = slackEvent.view.callback_id;
   switch (callbackId) {
     case "REPO_SUBMISSION":
-      let repoSubmission = slackEvent.view.state.values.repoInput.REPO_INPUT.value;
+      let repoSubmission = slackEvent.view.state.values.repoInput.REPO_INPUT.value.trim();
       console.log(repoSubmission);
-      return "200 OK";
+      if (verifyRepoSubmission(repoSubmission)) {
+        await dynamoHelper.writeRepos(client, repoSubmission);
+
+        return {
+          "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": ""
+        };
+      } else {
+        // Return error message update thing
+        return "200 OK";
+      }
+      
     case "RG_SUBMISSION":
-      let rgSubmission = slackEvent.view.state.values.rgInput.RG_INPUT.value;
+      let rgSubmission = slackEvent.view.state.values.rgInput.RG_INPUT.value.trim();
       console.log(rgSubmission);
-      console.log("butts");
-      return {
-        "statusCode": 200,
-        "headers": {
-          "Content-Type": "application/json"
-        },
-        "body": ""
-      };
+      if (verifyRepoSubmission(rgSubmission)) {
+        await dynamoHelper.writeRepoGroups(client, rgSubmission.replace(/ /g, ''));
+
+        return {
+          "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": ""
+        };
+      } else {
+        // Return error message update thing
+        return "200 OK";
+      }
+      
     default:
       return "200 OK";
   }
+}
+
+function verifyRepoSubmission(repoSubmission) {
+  console.log(typeof repoSubmission);
+  let repoArray = repoSubmission.split(',');
+  for (i = 0; i < repoArray.length; i++) {
+    if (repoArray.length <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
