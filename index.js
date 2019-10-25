@@ -22,18 +22,42 @@ exports.handler = async (event) => {
     return event.challenge;
   } else if (event.cron) {
     console.log('not supported');
-    return "200 OK";
+    return {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": ""
+    };
   } else if (event.insight) {
     await insightHelper.handleInsightEvent(client, event);
-    return "200 OK";
+    return {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": ""
+    };
   } else if (event.type === "block_actions") {
     await handleInteraction(event);
-    return "200 OK";
+    return {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": ""
+    };
   } else if (event.type === "view_submission") {
     await handleModalSubmission(event);
   } else {
     await handleSlackEvent(event);
-    return "200 OK";
+    return {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": ""
+    };
   }
 };
 
@@ -42,7 +66,13 @@ async function handleSlackEvent(event) {
   console.log(JSON.stringify(slackEvent));
 
   if (slackEvent.subtype === "bot_message") {
-    return "200 OK";
+    return {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": ""
+    };
   }
 
   if (slackEvent.subtype === "channel_join") {
@@ -88,34 +118,28 @@ async function handleInteraction(slackEvent) {
   switch (actionId) {
     case "CHANNEL_SELECTION":
       await setupHelper.postingChannelSelected(client, slackEvent);
-
-      await client.chat.delete({
-        channel: slackEvent.channel.id,
-        ts: slackEvent.container.message_ts
-      });
+      return {
+        'response_type': 'ephemeral',
+        'text': '',
+        'replace_original': true,
+        'delete_original': true
+      };
       break;
     case "CHANNEL_SETUP":
       console.log(JSON.stringify(slackEvent));
-      await setupHelper.setPostingChannel(client, {"channel": slackEvent.channel.id});
-      await client.chat.delete({
-        channel: slackEvent.channel.id,
-        ts: slackEvent.container.message_ts
-      });
+      await setupHelper.setPostingChannel(client, slackEvent);
+      return {
+        'response_type': 'ephemeral',
+        'text': '',
+        'replace_original': true,
+        'delete_original': true
+      };
       break;
     case "REPO_SETUP":
       await setupHelper.setInterestedRepos(client, slackEvent);
-      await client.chat.delete({
-        channel: slackEvent.channel.id,
-        ts: slackEvent.container.message_ts
-      });
       break;
     case "RG_SETUP":
       await setupHelper.setInterestedRepoGroups(client, slackEvent);
-      await client.chat.delete({
-        channel: slackEvent.channel.id,
-        ts: slackEvent.container.message_ts
-      });
-      break;
     default:
       break;
   }
@@ -129,7 +153,7 @@ async function handleModalSubmission(slackEvent) {
       let repoSubmission = slackEvent.view.state.values.repoInput.REPO_INPUT.value.trim();
       console.log(repoSubmission);
       if (verifyRepoSubmission(repoSubmission)) {
-        await dynamoHelper.writeRepos(client, repoSubmission);
+        await dynamoHelper.writeRepos(client, slackEvent, repoSubmission);
 
         return {
           "statusCode": 200,
@@ -140,14 +164,20 @@ async function handleModalSubmission(slackEvent) {
         };
       } else {
         // Return error message update thing
-        return "200 OK";
+        return {
+          "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": ""
+        };
       }
       
     case "RG_SUBMISSION":
       let rgSubmission = slackEvent.view.state.values.rgInput.RG_INPUT.value.trim();
       console.log(rgSubmission);
       if (verifyRepoSubmission(rgSubmission)) {
-        await dynamoHelper.writeRepoGroups(client, rgSubmission.replace(/ /g, ''));
+        await dynamoHelper.writeRepoGroups(client, slackEvent, rgSubmission.replace(/ /g, ''));
 
         return {
           "statusCode": 200,
@@ -158,11 +188,23 @@ async function handleModalSubmission(slackEvent) {
         };
       } else {
         // Return error message update thing
-        return "200 OK";
+        return {
+          "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": ""
+        };
       }
       
     default:
-      return "200 OK";
+      return {
+        "statusCode": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": ""
+      };
   }
 }
 

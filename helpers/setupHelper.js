@@ -1,6 +1,7 @@
 const methods = {};
 const dynamoHelper = require('./dynamoHelper');
 const components = require('./../components');
+const helper = require('./helperHelper');
 
 methods.handler = async (client, slackEvent, type) => {
   switch (type) {
@@ -31,7 +32,9 @@ methods.setInterestedRepos = async (client, slackEvent) => {
   let modal = components.repoInputModal
 
   console.log(JSON.stringify(slackEvent));
-  client.views.open({
+  modal.private_metadata = helper.getChannel(slackEvent);
+
+  await client.views.open({
     trigger_id: slackEvent.trigger_id,
     view: modal
   });
@@ -42,7 +45,9 @@ methods.setInterestedRepoGroups = async (client, slackEvent) => {
   let modal = components.rgInputModal
 
   console.log(JSON.stringify(slackEvent));
-  client.views.open({
+  modal.private_metadata = helper.getChannel(slackEvent);
+
+  await client.views.open({
     trigger_id: slackEvent.trigger_id,
     view: modal
   });
@@ -52,8 +57,9 @@ async function parseAmbiguousSetupRequest(client, slackEvent) {
   console.log('parsing ambiguous request');
   let component = components.setupParser
   component.channel = slackEvent.channel;
+  component.user = slackEvent.user;
 
-  await client.chat.postMessage(component);
+  await client.chat.postEphemeral(component);
 }
 
 methods.newChannelJoin = async (client, channel) => {
@@ -69,22 +75,24 @@ methods.postingChannelSelected = async (client, slackEvent) => {
 
   await dynamoHelper.setSelectedChannel(client, selectedChannelId);
 
-  await client.chat.postMessage({
-    channel: slackEvent.channel.id,
+  await client.chat.postEphemeral({
+    channel: helper.getChannel(slackEvent),
+    user: helper.getUser(slackEvent),
     text: `Awesome! From now on, I'll post updates in ${slackEvent.actions[0].selected_option.text.text}`
   });
 }
 
 methods.setPostingChannel = async (client, slackEvent) => {
   let goodChannels = await getChannels(client);
-
+  console.log(slackEvent);
   let message = components.channelSelect;
-  message.channel = slackEvent.channel;
+  message.channel = helper.getChannel(slackEvent);
+  message.user = helper.getUser(slackEvent);
   message.blocks[2].accessory.options = goodChannels;
 
   console.log(JSON.stringify(message));
 
-  await client.chat.postMessage(message);
+  await client.chat.postEphemeral(message);
 }
 
 async function getChannels(client) {

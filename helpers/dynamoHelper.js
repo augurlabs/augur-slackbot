@@ -1,4 +1,5 @@
 const methods = {};
+const helper = require('./helperHelper');
 
 var AWS = require("aws-sdk");
 
@@ -42,7 +43,7 @@ methods.getTeamInfo = async (client) => {
   return response;
 }
 
-methods.writeRepos = async (client, submission) => {
+methods.writeRepos = async (client, slackEvent, submission) => {
   let teamResponse = await client.team.info();
   let oldRepos = await methods.getRepos(client);
   if (oldRepos) {
@@ -63,6 +64,11 @@ methods.writeRepos = async (client, submission) => {
   };
 
   await docClient.update(params).promise();
+  await client.chat.postEphemeral({
+    channel: helper.getChannel(slackEvent),
+    user: helper.getUser(slackEvent),
+    text: `You are currently tracking these Repositories:\n${interestedRepos.replace(",", ", ")}`
+  });
 }
 
 methods.getRepos = async (client) => {
@@ -85,7 +91,7 @@ methods.getRepos = async (client) => {
   }
 }
 
-methods.writeRepoGroups = async (client, submission) => {
+methods.writeRepoGroups = async (client, slackEvent, submission) => {
   let teamResponse = await client.team.info();
   let oldRepoGroups = await methods.getRepoGroups(client);
   if (oldRepoGroups) {
@@ -110,6 +116,14 @@ methods.writeRepoGroups = async (client, submission) => {
   };
 
   await docClient.update(params).promise();
+
+  console.log(slackEvent);
+
+  await client.chat.postEphemeral({
+    channel: helper.getChannel(slackEvent),
+    user: helper.getUser(slackEvent),
+    text: `You are currently tracking these Repository Groups:\n${interestedRepoGroups.replace(",", ", ")}`
+  });
 }
 
 methods.getRepoGroups = async (client) => {
