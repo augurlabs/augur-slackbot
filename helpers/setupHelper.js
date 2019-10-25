@@ -116,4 +116,66 @@ async function getChannels(client) {
   return goodChannels;
 }
 
+async function getRGs(client) {
+  let interestedRepoGroups = await dynamoHelper.getRepoGroups(client);
+  let goodRGs = [];
+  for (rg of interestedRepoGroups.split(",")) {
+      goodRGs.push({
+        "text": {
+          "type": "plain_text",
+          "text": rg,
+          "emoji": true
+        },
+        "value": rg
+      });
+  }
+
+  return goodRGs;
+}
+
+async function getRepos(client) {
+  let interestedRepos = await dynamoHelper.getRepos(client);
+  let goodRepos = [];
+  for (repo of interestedRepos.split(",")) {
+    goodRepos.push({
+      "text": {
+        "type": "plain_text",
+        "text": repo,
+        "emoji": true
+      },
+      "value": repo
+    });
+  }
+
+  return goodRepos;
+}
+
+methods.removeRepoGroup = async (client, slackEvent) => {
+  let interestedRepoGroups = await getRGs(client);
+  console.log(slackEvent);
+
+  let message = components.removeRG
+  message.channel = helper.getChannel(slackEvent);
+  message.user = helper.getUser(slackEvent);
+  message.blocks[2].accessory.options = interestedRepoGroups;
+
+  console.log(JSON.stringify(message));
+
+  await client.chat.postEphemeral(message);
+}
+
+methods.removeRepos = async (client, slackEvent) => {
+  let interestedRepos = await getRepos(client);
+  console.log(slackEvent);
+
+  let message = components.removeRepos
+  message.channel = helper.getChannel(slackEvent);
+  message.user = helper.getUser(slackEvent);
+  message.blocks[2].accessory.options = interestedRepos;
+
+  console.log(JSON.stringify(message));
+
+  await client.chat.postEphemeral(message);
+}
+
 module.exports = methods;

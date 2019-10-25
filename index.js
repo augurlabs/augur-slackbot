@@ -3,7 +3,6 @@ const {
 } = require('@slack/web-api');
 
 
-const Slack = require('slack-node');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -12,6 +11,8 @@ let client = new WebClient(token);
 const insightHelper = require('./helpers/insightHelper');
 const setupHelper = require('./helpers/setupHelper');
 const dynamoHelper = require('./helpers/dynamoHelper');
+const components = require('./components');
+const helper = require('./helpers/helperHelper');
 
 
 exports.handler = async (event) => {
@@ -96,6 +97,18 @@ async function handleMention(slackEvent) {
   } else if (text.includes('insight')) {
     let rg_id = text.slice(12).match(/\d/g);
     await insightHelper.postInsights(client, slackEvent.channel, slackEvent.event_ts, rg_id);
+  } else if (text.includes('delete') || text.includes('remove')) {
+    if (text.includes('repo group') || text.includes('group')) {
+      await setupHelper.removeRepoGroup(client, slackEvent);
+    } else if (text.includes('repository') || text.includes('repo')) {
+      await setupHelper.removeRepos(client, slackEvent);
+    } else {
+      // Parse general remove request
+      let component = components.generalRemove
+      component.channel = helper.getChannel(slackEvent);
+      component.user = helper.getUser(slackEvent);
+      await client.chat.postEphemeral(component);
+    }
   }
 }
 
@@ -107,6 +120,19 @@ async function handleDm(slackEvent) {
   } else if (text.includes('insight')) {
     let rg_id = text.match(/\d/g);
     await postInsights(slackEvent.channel, slackEvent.event_ts, rg_id);
+  } else if (text.includes('delete') || text.includes('remove')) {
+    if (text.includes('repo group') || text.includes('group')) {
+      await setupHelper.removeRepoGroup(client, slackEvent);
+    } else if (text.includes('repository') || text.includes('repo')) {
+      await setupHelper.removeRepos(client, slackEvent);
+    } else {
+      // Parse general remove request
+      let component = components.generalRemove
+      component.channel = helper.getChannel(slackEvent);
+      component.user = helper.getUser(slackEvent);
+      await client.chat.postEphemeral(component);
+    }
+    
   }
 }
 
@@ -140,6 +166,29 @@ async function handleInteraction(slackEvent) {
       break;
     case "RG_SETUP":
       await setupHelper.setInterestedRepoGroups(client, slackEvent);
+      break;
+    case "REMOVE_REPOS":
+      await setupHelper.removeRepos(client, slackEvent);
+      break;
+    case "REMOVE_RGS":
+      await setupHelper.removeRepoGroup(client, slackEvent);
+      break;
+    case "REPO_DELETION":
+      let repos = [];
+      let repoArray = slackEvent.actions[0].selected_options
+      for (repo of repoArray) {
+        repos.push(repo.value);
+      }
+      await dynamoHelper.removeRepos(client, slackEvent, repos);
+      break;
+    case "RG_DELETION":
+      let rgs = [];
+      let rgArray = slackEvent.actions[0].selected_options
+      for (repo of rgArray) {
+        rgs.push(repo.value);
+      }
+      await dynamoHelper.removeRepoGroups(client, slackEvent, rgs);
+      break;
     default:
       break;
   }

@@ -41,6 +41,108 @@ methods.channelSelect = {
   ]
 }
 
+methods.removeRG = {
+  blocks: [{
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Which Repo Groups would you like to remove?"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Pick groups from the list"
+    },
+    "accessory": {
+      "type": "multi_static_select",
+      "action_id": "RG_DELETION",
+      "placeholder": {
+        "type": "plain_text",
+        "text": "Select items",
+        "emoji": true
+      },
+      "options": [
+      ]
+    }
+  }
+  ]
+}
+
+methods.removeRepos = {
+  blocks: [{
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Which Repos would you like to remove?"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Pick Repositories from the list"
+    },
+    "accessory": {
+      "type": "multi_static_select",
+      "action_id": "REPO_DELETION",
+      "placeholder": {
+        "type": "plain_text",
+        "text": "Select items",
+        "emoji": true
+      },
+      "options": []
+    }
+  }
+  ]
+}
+
+methods.generalRemove = {
+  blocks: [{
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "What would you like to remove?"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "actions",
+    "elements": [
+      {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Repos",
+          "emoji": true
+        },
+        "action_id": "REMOVE_REPOS",
+        "value": "REMOVE_REPOS"
+      },
+      {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Repo Groups",
+          "emoji": true
+        },
+        "action_id": "REMOVE_RGS",
+        "value": "REMOVE_RGS"
+      },
+    ]
+  }
+  ]
+}
+
 methods.setupParser = {
   blocks: [{
       "type": "section",

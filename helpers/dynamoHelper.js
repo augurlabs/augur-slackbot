@@ -91,6 +91,46 @@ methods.getRepos = async (client) => {
   }
 }
 
+methods.removeRepos = async (client, slackEvent, submission) => {
+  let teamResponse = await client.team.info();
+  let currentRGs = await methods.getRepos(client);
+  let currentRGArray = currentRGs.split(',');
+
+  let finalRGArray = []
+
+  for (rg of currentRGArray) {
+    let isBad = false;
+    for (group of submission) {
+      if (rg === group) {
+        isBad = true;
+      }
+    }
+    if (!isBad) {
+      finalRGArray.push(rg);
+    }
+  }
+  var params = {
+    TableName: "OSSHealth-Notifier",
+    Key: {
+      "teamId": teamResponse.team.id,
+    },
+    UpdateExpression: "set interestedRepos = :val",
+    ExpressionAttributeValues: {
+      ":val": finalRGArray.join(',')
+    },
+  };
+
+  await docClient.update(params).promise();
+
+  console.log(slackEvent);
+
+  await client.chat.postEphemeral({
+    channel: helper.getChannel(slackEvent),
+    user: helper.getUser(slackEvent),
+    text: `You are currently tracking these Repositories:\n${finalRGArray.join(", ")}`
+  });
+}
+
 methods.writeRepoGroups = async (client, slackEvent, submission) => {
   let teamResponse = await client.team.info();
   let oldRepoGroups = await methods.getRepoGroups(client);
@@ -143,6 +183,46 @@ methods.getRepoGroups = async (client) => {
   } else {
     return undefined;
   }
+}
+
+methods.removeRepoGroups = async (client, slackEvent, submission) => {
+  let teamResponse = await client.team.info();
+  let currentRGs = await methods.getRepoGroups(client);
+  let currentRGArray = currentRGs.split(',');
+
+  let finalRGArray= []
+
+  for (rg of currentRGArray) {
+    let isBad = false;
+    for (group of submission) {
+      if (rg === group) {
+        isBad = true;
+      }
+    }
+    if (!isBad) {
+      finalRGArray.push(rg);
+    }
+  }
+  var params = {
+    TableName: "OSSHealth-Notifier",
+    Key: {
+      "teamId": teamResponse.team.id,
+    },
+    UpdateExpression: "set interestedRepoGroups = :val",
+    ExpressionAttributeValues: {
+      ":val": finalRGArray.join(',')
+    },
+  };
+
+  await docClient.update(params).promise();
+
+  console.log(slackEvent);
+
+  await client.chat.postEphemeral({
+    channel: helper.getChannel(slackEvent),
+    user: helper.getUser(slackEvent),
+    text: `You are currently tracking these Repository Groups:\n${finalRGArray.join(", ")}`
+  });
 }
 
 function removeDuplicates(newSubmissions, oldSubmissions) {
