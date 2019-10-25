@@ -13,6 +13,7 @@ const setupHelper = require('./helpers/setupHelper');
 const dynamoHelper = require('./helpers/dynamoHelper');
 const components = require('./components');
 const helper = require('./helpers/helperHelper');
+const rp = require('request-promise');
 
 
 exports.handler = async (event) => {
@@ -144,34 +145,28 @@ async function handleInteraction(slackEvent) {
   switch (actionId) {
     case "CHANNEL_SELECTION":
       await setupHelper.postingChannelSelected(client, slackEvent);
-      return {
-        'response_type': 'ephemeral',
-        'text': '',
-        'replace_original': true,
-        'delete_original': true
-      };
+      await deleteEphemeral(slackEvent.response_url);
       break;
     case "CHANNEL_SETUP":
       console.log(JSON.stringify(slackEvent));
       await setupHelper.setPostingChannel(client, slackEvent);
-      return {
-        'response_type': 'ephemeral',
-        'text': '',
-        'replace_original': true,
-        'delete_original': true
-      };
+      await deleteEphemeral(slackEvent.response_url);      
       break;
     case "REPO_SETUP":
       await setupHelper.setInterestedRepos(client, slackEvent);
+      await deleteEphemeral(slackEvent.response_url);
       break;
-    case "RG_SETUP":
+    case "RG_SETUP": 
       await setupHelper.setInterestedRepoGroups(client, slackEvent);
+      await deleteEphemeral(slackEvent.response_url);
       break;
     case "REMOVE_REPOS":
       await setupHelper.removeRepos(client, slackEvent);
+      await deleteEphemeral(slackEvent.response_url);
       break;
     case "REMOVE_RGS":
       await setupHelper.removeRepoGroup(client, slackEvent);
+      await deleteEphemeral(slackEvent.response_url);
       break;
     case "REPO_DELETION":
       let repos = [];
@@ -180,6 +175,7 @@ async function handleInteraction(slackEvent) {
         repos.push(repo.value);
       }
       await dynamoHelper.removeRepos(client, slackEvent, repos);
+      await deleteEphemeral(slackEvent.response_url);
       break;
     case "RG_DELETION":
       let rgs = [];
@@ -188,6 +184,7 @@ async function handleInteraction(slackEvent) {
         rgs.push(repo.value);
       }
       await dynamoHelper.removeRepoGroups(client, slackEvent, rgs);
+      await deleteEphemeral(slackEvent.response_url);
       break;
     default:
       break;
@@ -266,4 +263,17 @@ function verifyRepoSubmission(repoSubmission) {
     }
   }
   return true;
+}
+
+async function deleteEphemeral(response_url) {
+  let options = {
+    method: 'POST',
+    uri: response_url,
+    body: {
+      'replace_original': true,
+      'delete_original': true
+    },
+    json: true // Automatically stringifies the body to JSON
+  };
+  await rp(options);
 }
