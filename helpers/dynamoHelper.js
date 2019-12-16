@@ -10,90 +10,114 @@ AWS.config.update({
 
 let docClient = new AWS.DynamoDB.DocumentClient();
 
-methods.setSelectedChannel = async (client, channelId) => {
-    let teamResponse = await client.team.info();
+methods.createUser = async (client, slackEvent) => {
+  let teamResponse = await client.team.info();
+  var params = {
+    TableName: table,
+    Item: {
+      "userID": helper.getUser(slackEvent),
+      "teamID": teamResponse.team.id,
+      "interestedRepos": [],
+      "interestedRepoGroups": [],
+    }
+  };
 
-    var params = {
-      TableName: "OSSHealth-Notifier",
-      Key: {
-        "teamId": teamResponse.team.id,
-      },
-      UpdateExpression: "set postingChannel = :val",
-      ExpressionAttributeValues: {
-        ":val": channelId
-      },
-    };
-    
-    let response = await docClient.update(params).promise();
-    console.log(JSON.stringify(response));
+  let response = await docClient.put(params).promise();
+  console.log(response);
 }
 
-methods.getTeamInfo = async (client) => {
-  let teamResponse = await client.team.info();
+methods.getUser = async (client, slackEvent) => {
+  let user = helper.getUser(slackEvent);
 
   var params = {
-    TableName: "OSSHealth-Notifier",
+    TableName: "auggie-users",
     Key: {
-      "teamId": teamResponse.team.id
+      "userID": user
     }
   };
 
   let response = await docClient.get(params).promise();
-  console.log(`RESPONSE: ${JSON.stringify(response)}`);
-  return response;
+  console.log(`host response  ${JSON.stringify(response)}`);
+
+  
+
+  if (response) {
+    if (!response.Item.teamID) {
+      let teamResponse = await client.team.info();
+      var params = {
+        TableName: "auggie-users",
+        Key: {
+          "userID": user
+        },
+        UpdateExpression: "set teamID = :val",
+        ExpressionAttributeValues: {
+          ":val": teamResponse.team.id
+        },
+      };
+
+      await docClient.update(params).promise();
+
+    }
+
+    return response.Item;
+  } else {
+    console.log("User does not exist: creating");
+    await methods.createUser(client, slackEvent);
+    let user = await methods.getUser(client, slackEvent);
+    return user;
+  }
+}
+
+methods.setHost = async (client, slackEvent, host) => {
+
+  var params = {
+    TableName: "auggie-users",
+    Key: {
+      "userID": helper.getUser(slackEvent),
+    },
+    UpdateExpression: "set host = :val",
+    ExpressionAttributeValues: {
+      ":val": host
+    },
+  };
+
+  let response = await docClient.update(params).promise();
+  console.log(JSON.stringify(response));
+}
+
+methods.getAllUsers = async () => {
+  var params = {
+    TableName: "auggie-users"
+  };
+
+  let response = await docClient.scan(params).promise();
+  console.log(response.Items);
+  return response.Items;
 }
 
 methods.writeRepos = async (client, slackEvent, submission) => {
-  let teamResponse = await client.team.info();
-  let oldRepos = await methods.getRepos(client);
-  if (oldRepos) {
-    var interestedRepos = removeDuplicates(submission, oldRepos).join(',');
-  } else {
-    var interestedRepos = submission;
-  }
-  
-  var params = {
-    TableName: "OSSHealth-Notifier",
+  const params = {
+    TableName: "auggie-users",
     Key: {
-      "teamId": teamResponse.team.id,
+      "userID": helper.getUser(slackEvent),
     },
-    UpdateExpression: "set interestedRepos = :val",
+    UpdateExpression: "SET #attrName = list_append(#attrName, :attrValue)",
+    ExpressionAttributeNames: {
+      "#attrName": "interestedRepos"
+    },
     ExpressionAttributeValues: {
-      ":val": interestedRepos
+      ":attrValue": submission
     },
+    ReturnValues: "UPDATED_NEW"
   };
 
-  await docClient.update(params).promise();
-  await client.chat.postEphemeral({
-    channel: helper.getChannel(slackEvent),
-    user: helper.getUser(slackEvent),
-    text: `You are currently tracking these Repositories:\n${interestedRepos.replace(",", ", ")}`
-  });
-}
-
-methods.getRepos = async (client) => {
-  let teamResponse = await client.team.info();
-
-  var params = {
-    TableName: "OSSHealth-Notifier",
-    Key: {
-      "teamId": teamResponse.team.id
-    }
-  };
-
-  let response = await docClient.get(params).promise();
-  console.log(`repo response  ${JSON.stringify(response)}`);
-
-  if (response.Item) {
-    return response.Item.interestedRepos;
-  } else {
-    return undefined;
-  }
+  let response = await docClient.update(params).promise();
+  console.log(response);
 }
 
 methods.removeRepos = async (client, slackEvent, submission) => {
-  let teamResponse = await client.team.info();
-  let currentRGs = await methods.getRepos(client);
+  let user = await methods.getUser(slackEvent);
+  let currentRGs = user.interestedRepos;
   let currentRGArray = currentRGs.split(',');
 
   let finalRGArray = []
@@ -110,9 +134,9 @@ methods.removeRepos = async (client, slackEvent, submission) => {
     }
   }
   var params = {
-    TableName: "OSSHealth-Notifier",
+    TableName: "auggie-users",
     Key: {
-      "teamId": teamResponse.team.id,
+      "userID": helper.getUser(slackEvent)
     },
     UpdateExpression: "set interestedRepos = :val",
     ExpressionAttributeValues: {
@@ -132,8 +156,9 @@ methods.removeRepos = async (client, slackEvent, submission) => {
 }
 
 methods.writeRepoGroups = async (client, slackEvent, submission) => {
-  let teamResponse = await client.team.info();
-  let oldRepoGroups = await methods.getRepoGroups(client);
+  let user = await methods.getUser(slackEvent);
+  let oldRepoGroups = user.interestedRepoGroups;
+
   if (oldRepoGroups) {
     var interestedRepoGroups = removeDuplicates(submission, oldRepoGroups);
     for (repo of interestedRepoGroups){
@@ -145,9 +170,9 @@ methods.writeRepoGroups = async (client, slackEvent, submission) => {
   }
 
   var params = {
-    TableName: "OSSHealth-Notifier",
+    TableName: "auggie-users",
     Key: {
-      "teamId": teamResponse.team.id,
+      "userID": helper.getUser(slackEvent)
     },
     UpdateExpression: "set interestedRepoGroups = :val",
     ExpressionAttributeValues: {
@@ -166,28 +191,9 @@ methods.writeRepoGroups = async (client, slackEvent, submission) => {
   });
 }
 
-methods.getRepoGroups = async (client) => {
-  let teamResponse = await client.team.info();
-
-  var params = {
-    TableName: "OSSHealth-Notifier",
-    Key: {
-      "teamId": teamResponse.team.id
-    }
-  };
-
-  let response = await docClient.get(params).promise();
-  console.log(`repo group response  ${JSON.stringify(response)}`);
-  if (response.Item) {
-    return response.Item.interestedRepoGroups;
-  } else {
-    return undefined;
-  }
-}
-
 methods.removeRepoGroups = async (client, slackEvent, submission) => {
-  let teamResponse = await client.team.info();
-  let currentRGs = await methods.getRepoGroups(client);
+  let user = await methods.getUser(slackEvent);
+  let currentRGs = user.interestedRepoGroups;
   let currentRGArray = currentRGs.split(',');
 
   let finalRGArray= []
@@ -204,9 +210,9 @@ methods.removeRepoGroups = async (client, slackEvent, submission) => {
     }
   }
   var params = {
-    TableName: "OSSHealth-Notifier",
+    TableName: "auggie-users",
     Key: {
-      "teamId": teamResponse.team.id,
+      "userID": helper.getUser(slackEvent)
     },
     UpdateExpression: "set interestedRepoGroups = :val",
     ExpressionAttributeValues: {

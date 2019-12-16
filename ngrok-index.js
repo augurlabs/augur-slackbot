@@ -9,7 +9,6 @@ AWS.config.update({
     endpoint: "http://localhost:8000"
 });
 let client = new AWS.DynamoDB();
-let docClient = new AWS.DynamoDB.DocumentClient();
 
 const PORT=4390;
 

@@ -4,16 +4,12 @@
   "description": "## Table of Contents 1. [Setup ngrok Environment](https://api.slack.com/tutorials/tunneling-with-ngrok) 2. [Create Slack App](https://api.slack.com/apps)     1. Copy Permissions     2. Add ngrok request urls 4. Create .env file in root directory     1. add SLACK_TOKEN and SIGNING_SECRET 3. [Local Dynamo](https://medium.com/@vschroeder/install-a-local-dynamodb-development-database-on-your-machine-82dc38d59503)     1. This works with zsh right now, not sure about bash",
   "main": "index.js",
   "dependencies": {
+    "@slack/web-api": "^5.5.0",
     "aws-sdk": "^2.539.0",
-    "dynamodb-local": "^0.0.30",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "https": "^1.0.0",
-    "local-dynamo": "^0.5.0",
-    "pg": "^7.12.1",
     "request": "^2.88.0",
-    "request-promise": "^4.2.4",
-    "slack-node": "^0.1.8"
+    "request-promise": "^4.2.4"
   },
   "devDependencies": {},
   "scripts": {

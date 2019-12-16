@@ -7,13 +7,65 @@ methods.handleInsightEvent = async (client, event) => {
   console.log("event happening");
   console.log(JSON.stringify(event));
 
-  let teamInfo = await dynamoHelper.getTeamInfo(client);
-  let channel = teamInfo.Item.postingChannel
+  let users = await dynamoHelper.getAllUsers();
 
-  await client.chat.postMessage({
-    channel: channel,
-    text: "There was an insight event! Thanks Gabe"
-  });
+  for (user of users) {
+    // let interest = await checkIfInterested(client, event);
+    let interest = true
+    
+    if (interest) {
+      console.log("IS INTERESTED");
+      let message = constructSentence(event);
+      await client.chat.postMessage({
+        channel: user.userID,
+        text: "*Insight Event* \n\n" + message
+      });
+    }
+  }
+  
+}
+
+function constructSentence(event) {
+  if (event.field === "added" || event.field === "removed") {
+    event.field = "lines " + event.field;
+  }
+
+  let value = event.value + " " + event.field;
+  let percentChange = (event.value / event.units_from_mean).toFixed(0);
+  let timePeriod = "90 days"
+  let changeWord = (value > 0) ? "decrease" : "increase";
+  let rgWord = ``;
+  if (event.rg_name) {
+    rgWord = `(${event.rg_name}) `;
+  }
+  
+  let insightSentence = `There were ${value} on ${event.repo_git} ${rgWord}over the last ${timePeriod}. `;
+  
+  let justificationSentence = `\nThat represents a ${percentChange*100}% ${changeWord} from the mean!`;
+
+  let fullSentence = insightSentence + justificationSentence;
+
+  return fullSentence;
+}
+
+async function checkIfInterested(client, event) {
+  // Query users host 
+  // cache information
+  // check to see if it includes repo/repo group
+
+  console.log("CHECKING IF INTERESTED");
+  // let teamResponse = await client.team.info();
+  // let teamId = teamResponse.team.id;
+  let interestedRepos = await dynamoHelper.getRepos(client);
+  let interestedRepoGroups = await dynamoHelper.getRepoGroups(client);
+  console.log(`interested Repos: ${interestedRepos}`);
+  console.log(`interested rgs: ${interestedRepoGroups}`);
+  if (interestedRepos.includes(event.repo_git) || interestedRepoGroups.includes(event.rg_name)) {
+    console.log(`Interested Repos (${interestedRepos}) contains ${event.repo_git}\nOR\nInterested RepoGroups (${interestedRepoGroups}) contains ${event.rg_name}`);
+    return true
+  } else {
+    return false;
+  }
 }
 
 

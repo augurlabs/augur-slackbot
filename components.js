@@ -41,6 +41,75 @@ methods.channelSelect = {
   ]
 }
 
+methods.chooseHost = {
+  blocks: [{
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "What augur host are you interested in? This will help me show you relevant insight about repositories and repository groups!"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Pick a host from the dropdown list"
+    },
+    "accessory": {
+      "type": "static_select",
+      "action_id": "HOST_SELECTION",
+      "placeholder": {
+        "type": "plain_text",
+        "text": "Select a host",
+        "emoji": true
+      }
+    }
+  }
+  ]
+}
+
+methods.setupHostConfirmation = {
+  blocks: [{
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Looks like you don't have a host setup for this workspace yet, would you like to choose one?"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "actions",
+    "elements": [
+      {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Yes",
+          "emoji": true
+        },
+        "action_id": "HOST_SETUP",
+        "value": "HOST_SETUP"
+      },
+      {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "No",
+          "emoji": true
+        },
+        "action_id": "DO_NOTHING",
+        "value": "DO_NOTHING"
+      }
+    ]
+  }
+  ]
+}
+
 methods.removeRG = {
   blocks: [{
     "type": "section",
@@ -157,6 +226,16 @@ methods.setupParser = {
     {
       "type": "actions",
       "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Host",
+            "emoji": true
+          },
+          "action_id": "HOST_SETUP",
+          "value": "HOST_SETUP"
+        },
         {
           "type": "button",
           "text": {
@@ -295,6 +374,36 @@ methods.rgInputModal = {
         }
       }
     }
+  ]
+}
+
+methods.chooseRepos = {
+  blocks: [{
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "What repositories are you interested in?"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Pick a Repository from the dropdown list"
+    },
+    "accessory": {
+      "type": "multi_static_select",
+      "action_id": "REPO_SELECTION",
+      "placeholder": {
+        "type": "plain_text",
+        "text": "Select a Repo",
+        "emoji": true
+      }
+    }
+  }
   ]
 }
 
