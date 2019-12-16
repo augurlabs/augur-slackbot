@@ -192,5 +192,5 @@ async function handleInteraction(slackEvent) {
 }
 
 async function handleModalSubmission(slackEvent) {
-  await interactionHelper.modalHandler(client, slackEvent);
+  console.log("No Modal Should Occur");
 }

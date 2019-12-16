@@ -74,46 +74,6 @@ methods.handler = async (client, slackEvent) => {
     }
 }
 
-// methods.modalHandler = async (client, slackEvent) => {
-//     console.log('Handling Modal!');
-//     let callbackId = slackEvent.view.callback_id;
-//     switch (callbackId) {
-//         case "REPO_SUBMISSION":
-//             let repoSubmission = slackEvent.view.state.values.repoInput.REPO_INPUT.value.trim();
-//             console.log(repoSubmission);
-//             if (verifyRepoSubmission(repoSubmission)) {
-//                 await dynamoHelper.writeRepos(client, slackEvent, repoSubmission);
-
-//                 return HTTP_OK;
-//             } else {
-//                 // Return error message update thing
-//                 return HTTP_OK;
-//             }
-
-//         case "RG_SUBMISSION":
-//             let rgSubmission = slackEvent.view.state.values.rgInput.RG_INPUT.value.trim();
-//             console.log(rgSubmission);
-//             if (verifyRepoSubmission(rgSubmission)) {
-//                 await dynamoHelper.writeRepoGroups(client, slackEvent, rgSubmission.replace(/ /g, ''));
-//                 print("Returning a 200 OK");
-//                 return {
-//                     "statusCode": 200,
-//                     "headers": {
-//                         "Content-Type": "application/json"
-//                     },
-//                     "body": ""
-//                 };
-//             } else {
-//                 print("returning a 200 OK but invalid input");
-//                 // Return error message update thing
-//                 return HTTP_OK;
-//             }
-
-//         default:
-//             return HTTP_OK;
-//     }
-// }
-
 async function deleteEphemeral(response_url) {
     let options = {
         method: 'POST',
@@ -122,20 +82,9 @@ async function deleteEphemeral(response_url) {
             'replace_original': true,
             'delete_original': true
         },
-        json: true // Automatically stringifies the body to JSON
+        json: true 
     };
     await rp(options);
 }
-
-// function verifyRepoSubmission(repoSubmission) {
-//     console.log(typeof repoSubmission);
-//     let repoArray = repoSubmission.split(',');
-//     for (i = 0; i < repoArray.length; i++) {
-//         if (repoArray.length <= 0) {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
 
 module.exports = methods;

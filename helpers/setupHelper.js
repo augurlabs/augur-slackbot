@@ -163,15 +163,15 @@ methods.setInterestedRepoGroups = async (client, slackEvent) => {
 
     await client.chat.postEphemeral(component);
   } else {
-    let modal = components.rgInputModal
+    // let modal = components.rgInputModal
 
-    console.log(JSON.stringify(slackEvent));
-    modal.private_metadata = helper.getChannel(slackEvent);
+    // console.log(JSON.stringify(slackEvent));
+    // modal.private_metadata = helper.getChannel(slackEvent);
 
-    await client.views.open({
-      trigger_id: slackEvent.trigger_id,
-      view: modal
-    });
+    // await client.views.open({
+    //   trigger_id: slackEvent.trigger_id,
+    //   view: modal
+    // });
   }
 }
 
