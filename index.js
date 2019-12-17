@@ -6,7 +6,9 @@ const {
 const dotenv = require('dotenv');
 dotenv.config();
 
-const token = process.env.SLACK_TOKEN;
+// const token = process.env.SLACK_TOKEN;
+const token = process.env.BOT_TOKEN;
+
 let client = new WebClient(token);
 const insightHelper = require('./helpers/insightHelper');
 const setupHelper = require('./helpers/setupHelper');

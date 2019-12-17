@@ -15,9 +15,16 @@ methods.handleInsightEvent = async (client, event) => {
     
     if (interest) {
       console.log("IS INTERESTED");
+
+      let channelResponse = await client.im.open({
+        user: user.userID
+      });
+
+      // console.log(channel);
+
       let message = constructSentence(event);
       await client.chat.postMessage({
-        channel: user.userID,
+        channel: channelResponse.channel.id,
         text: "*Insight Event* \n\n" + message
       });
     }

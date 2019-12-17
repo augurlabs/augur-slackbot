@@ -1,5 +1,6 @@
 const dynamoHelper = require('./dynamoHelper');
 const setupHelper = require('./setupHelper');
+const rp = require('request-promise');
 
 const methods = {};
 
