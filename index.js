@@ -88,50 +88,7 @@ async function handleSlackEvent(event) {
 }
 
 async function handleMention(slackEvent) {
-  // let text = slackEvent.text.toLowerCase().trim();
-
-  // if (text.includes('setup') && text.includes('channel')) {
-  //   await setupHelper.handler(client, slackEvent, "CHANNEL_SETUP");
-  // } else if (text.includes('setup') && text.includes('repo')) {
-  //   await setupHelper.handler(client, slackEvent, "REPO_SETUP");
-  // } else if (text.includes('setup')) {
-  //   await setupHelper.handler(client, slackEvent, "GENERAL_SETUP");
-  // } else if (text.includes('insight')) {
-  //   let rg_id = text.slice(12).match(/\d/g);
-  //   await insightHelper.postInsights(client, slackEvent.channel, slackEvent.event_ts, rg_id);
-  // } else if (text.includes('what') || text.includes('which')) {
-  //   if (text.includes('group')) {
-  //     let user = await dynamoHelper.getUser(slackEvent);
-  //     let rgs = user.interestedRepoGroups;
-
-  //     await client.chat.postEphemeral({
-  //       channel: helper.getChannel(slackEvent),
-  //       user: helper.getUser(slackEvent),
-  //       text: `You are currently tracking these Repository Groups:\n${rgs.replace(",", ", ")}`
-  //     });
-  //   } else if (text.includes('repo')) {
-  //     let user = await dynamoHelper.getUser(slackEvent);
-  //     let repos = user.interestedRepos;
-  //     // let repos = await dynamoHelper.getRepos(client);
-  //     await client.chat.postEphemeral({
-  //       channel: helper.getChannel(slackEvent),
-  //       user: helper.getUser(slackEvent),
-  //       text: `You are currently tracking these Repositories :\n${repos.replace(",", ", ")}`
-  //     });
-  //   }
-  // } else if (text.includes('delete') || text.includes('remove')) {
-  //   if (text.includes('repo group') || text.includes('group')) {
-  //     await setupHelper.removeRepoGroup(client, slackEvent);
-  //   } else if (text.includes('repository') || text.includes('repo')) {
-  //     await setupHelper.removeRepos(client, slackEvent);
-  //   } else {
-  //     // Parse general remove request
-  //     let component = components.generalRemove
-  //     component.channel = helper.getChannel(slackEvent);
-  //     component.user = helper.getUser(slackEvent);
-  //     await client.chat.postEphemeral(component);
-  //   }
-  // }
+ console.log("Only allow for DMs");
 }
 
 async function handleDm(slackEvent) {
