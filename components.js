@@ -301,6 +301,44 @@ methods.chooseRepos = {
   ]
 }
 
+methods.greeting = {
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Hi there, I'm Auggie! Would you like some help learning how to interact with me?"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "GREETING_RESPONSE_TRUE",
+          "text": {
+            "type": "plain_text",
+            "emoji": true,
+            "text": "Yes"
+          },
+          "value": "true",
+          "style": "primary"
+        },
+        {
+          "type": "button",
+          "action_id": "GREETING_RESPONSE_FALSE",
+          "text": {
+            "type": "plain_text",
+            "emoji": true,
+            "text": "Nope, just saying hey"
+          },
+          "value": "false"
+        }
+      ]
+    }
+  ]
+}
+
 
 
 module.exports = methods;

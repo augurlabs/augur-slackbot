@@ -14,6 +14,7 @@ const insightHelper = require('./helpers/insightHelper');
 const setupHelper = require('./helpers/setupHelper');
 const dynamoHelper = require('./helpers/dynamoHelper');
 const interactionHelper = require('./helpers/interactionHelper');
+const messageHelper = require('./helpers/messageHelper.js');
 const components = require('./components');
 const helper = require('./helpers/helperHelper');
 const rp = require('request-promise');
@@ -51,6 +52,7 @@ exports.handler = async (event) => {
 
 async function handleSlackEvent(event) {
   if (event.query) {
+    // This should all probably happen in the Slack Setup Site Codebase
     var options = {
       uri: 'https://slack.com/api/oauth.access?code='
         + event.query.code +
@@ -64,7 +66,8 @@ async function handleSlackEvent(event) {
     // console.log(JSON.stringify(body));
     console.log(JSON.stringify(response));
 
-    return event.queryStringParameters.code
+    return event.query.code
+    // I think we want to redirect to our Slack Setup Site here
   }
 
   let slackEvent = event.event;
@@ -141,9 +144,10 @@ async function handleDm(slackEvent) {
       component.channel = helper.getChannel(slackEvent);
       component.user = helper.getUser(slackEvent);
       await client.chat.postEphemeral(component);
-    }
-    
-  }
+    } 
+  } else  {
+    await messageHelper.handleGeneral(client, slackEvent, text);
+  } 
 }
 
 async function handleInteraction(slackEvent) {

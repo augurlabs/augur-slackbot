@@ -1,5 +1,6 @@
 const dynamoHelper = require('./dynamoHelper');
 const setupHelper = require('./setupHelper');
+const helper = require('./helperHelper');
 const rp = require('request-promise');
 
 const methods = {};
@@ -70,7 +71,16 @@ methods.handler = async (client, slackEvent) => {
             await dynamoHelper.removeRepoGroups(client, slackEvent, rgs);
             await deleteEphemeral(slackEvent.response_url);
             break;
+        case "GREETING_RESPONSE_TRUE":
+            await client.chat.postEphemeral({
+                channel: helper.getChannel(slackEvent),
+                user: helper.getUser(slackEvent),
+                text: "Here's how you can interact with me:\n*Put tutorial here later*"
+            });
+            await deleteEphemeral(slackEvent.response_url);
+            break;
         default:
+            await deleteEphemeral(slackEvent.response_url);
             break;
     }
 }
